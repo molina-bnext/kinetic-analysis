@@ -318,3 +318,80 @@ def plot_kinetics(
         velocity_ax.set_ylim((0, velocity[y].max()*2))
 
     ax.set_ylim(ax_ylim)
+
+# SCRATCH WIDGETS
+
+# Create a dropdown widget to control the table
+
+# slx_platemap = platemap.set_index('Well', drop=True, inplace=False)
+# show_platemap = slx_platemap[slx_platemap["Experiment"] == exp_ID].drop(columns=['Blank', 'Row', 'Column'])
+
+exp_ID_list = platemap['Experiment'].drop_duplicates().tolist()
+
+exp_wells_options = platemap.groupby('Experiment')['Well'].apply(list).to_dict()
+# print(exp_wells_options.to_dict())
+# display(exp_wells_options)
+
+exp_menu = widgets.Dropdown(
+    options=exp_ID_list,
+    value='DNA Concentration',
+    description='Experiment:',
+)
+
+well_menu = widgets.Dropdown(
+    options=[],
+    description='Options:'
+)
+
+def update_well_menu(change):
+    selected_value = change['new']
+    well_menu.options = exp_wells_options[selected_value]
+    well_menu.value = well_menu.options[0]
+
+
+
+def update_plot(Experiment, Well):
+
+    # TODO: import data
+
+    data = cytosol.read_cytation(
+        datafile="./sample-data/pure-dna-sweep.txt",
+        platemap=platemap,
+    )
+
+    data_by_experiment = data[data["Experiment"] == Experiment]
+    data_by_well = data_by_experiment[data_by_experiment["Well"] == Well]
+
+    single_well_kinetics = cytosol.kinetic_analysis(data=data_by_well, data_column="Data", time_cutoff=15000)
+    g = sns.FacetGrid(single_well_kinetics, col="Well", col_wrap=2, sharey=False, height=4, aspect=1.5)
+    g.map_dataframe(cytosol.plot_kinetics, y="Data", show_fit=True, show_velocity=False, annotate=True)
+
+    plt.show()
+
+# Callback function to update the plot when dropdowns change
+def on_dropdown_change(change):
+    Experiment = exp_menu.value
+    Well = well_menu.value
+    update_plot(Experiment, Well)
+
+# Attach the callback function to the first dropdown
+exp_menu.observe(update_well_menu, names='value')
+
+# Attach the callback to both dropdowns
+exp_menu.observe(on_dropdown_change, names='value')
+well_menu.observe(on_dropdown_change, names='value')
+
+# Arrange the widgets in a horizontal box
+hbox = widgets.HBox([exp_menu, well_menu])
+
+# Initialize the second dropdown options
+update_well_menu({'new': exp_menu.value})
+
+# Display the dropdowns and plot
+hbox = widgets.HBox([exp_menu , well_menu])
+display(hbox)
+
+# Initial plot
+# plot_sinusoid(frequency_dropdown.value, period_dropdown.value)
+
+#
