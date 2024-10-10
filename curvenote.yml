@@ -1,0 +1,17 @@
+version: 1
+project:
+  title: kinetic-analysis
+  id: 291512f8-a8c5-43a6-be25-1a3cc5e0ae30
+  jupyter:
+    binder:
+      url: https://y2j74k9mn0bz.curvenote.dev/services/binder/
+      repo: msa-em/fused-multi-modal-em
+site:
+  title: kinetic-analysis
+  options:
+    logo_text: kinetic-analysis
+  nav: []
+  actions:
+    - title: Learn More
+      url: https://curvenote.com/docs/web
+  domains: []
